@@ -3,7 +3,7 @@
 > **Production-ready feature store for real-time BNPL credit decisioning**  
 > Sub-40ms P95 latency • REST & gRPC APIs • Event-driven architecture
 
-[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
 [![Redis](https://img.shields.io/badge/Redis-7+-red.svg)](https://redis.io)
 [![BigQuery](https://img.shields.io/badge/BigQuery-enabled-blue.svg)](https://cloud.google.com/bigquery)
