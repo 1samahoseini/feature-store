@@ -1,0 +1,117 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Feature Store Pipeline Health",
+    "tags": ["feature-store", "pipelines", "data-quality"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Pipeline Execution Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "feature_store_pipeline_runs_total{pipeline=\"daily_batch\",status=\"success\"}",
+            "legendFormat": "Successful Runs",
+            "refId": "A"
+          },
+          {
+            "expr": "feature_store_pipeline_runs_total{pipeline=\"daily_batch\",status=\"error\"}",
+            "legendFormat": "Failed Runs",
+            "refId": "B"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+      },
+      {
+        "id": 2,
+        "title": "Pipeline Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "feature_store_pipeline_duration_seconds{pipeline=\"daily_batch\"}",
+            "legendFormat": "Daily Batch Duration (seconds)",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Duration (seconds)",
+            "min": 0
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+      },
+      {
+        "id": 3,
+        "title": "Records Processed",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(feature_store_records_processed_total[5m])",
+            "legendFormat": "{{table}} Records/sec",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }
+      },
+      {
+        "id": 4,
+        "title": "Data Freshness",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "feature_store_data_freshness_minutes",
+            "legendFormat": "{{table}} Freshness (minutes)",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Minutes",
+            "min": 0
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }
+      },
+      {
+        "id": 5,
+        "title": "Data Completeness",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "feature_store_data_completeness_ratio",
+            "legendFormat": "{{table}}.{{column}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "steps": [
+                { "color": "red", "value": null },
+                { "color": "yellow", "value": 0.9 },
+                { "color": "green", "value": 0.95 }
+              ]
+            }
+          }
+        },
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 }
+      },
+      {
+        "id": 6,
+        "title": "Streaming Pipeline Health",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(feature_store_streaming_messages_total{status=\"success\"}[1m])",
+            "legendFormat": "Messages Processed/sec",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 }
+      }
+    ]
+  }
+}

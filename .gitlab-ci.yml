@@ -1,0 +1,93 @@
+stages:
+  - test
+  - build
+  - deploy-staging
+  - deploy-production
+
+variables:
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  GCP_PROJECT_ID: your-gcp-project
+  GCP_REGION: us-central1
+
+# Test Stage
+test:
+  stage: test
+  image: python:3.11
+  services:
+    - postgres:15
+    - redis:7
+  variables:
+    POSTGRES_DB: test_feature_store
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: password
+    DATABASE_URL: postgresql://postgres:password@postgres:5432/test_feature_store
+    REDIS_HOST: redis
+  before_script:
+    - pip install -r requirements.txt
+    - pip install -e .
+  script:
+    - make lint
+    - make test-unit
+    - make test-integration
+    - make test-grpc
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+
+# Build Stage
+build:
+  stage: build
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t $DOCKER_IMAGE -f deployment/gcp/Dockerfile.gcp .
+    - docker push $DOCKER_IMAGE
+  only:
+    - main
+    - develop
+
+# Deploy to Staging
+deploy-staging:
+  stage: deploy-staging
+  image: google/cloud-sdk:alpine
+  before_script:
+    - echo $GCP_SERVICE_ACCOUNT | base64 -d > gcp-key.json
+    - gcloud auth activate-service-account --key-file gcp-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+  script:
+    - gcloud run deploy feature-store-staging
+        --image $DOCKER_IMAGE
+        --platform managed
+        --region $GCP_REGION
+        --allow-unauthenticated
+        --memory 2Gi
+        --cpu 2
+        --min-instances 1
+        --max-instances 10
+        --set-env-vars ENV=staging
+  only:
+    - develop
+
+# Deploy to Production
+deploy-production:
+  stage: deploy-production
+  image: google/cloud-sdk:alpine
+  before_script:
+    - echo $GCP_SERVICE_ACCOUNT | base64 -d > gcp-key.json
+    - gcloud auth activate-service-account --key-file gcp-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+  script:
+    - gcloud run deploy feature-store
+        --image $DOCKER_IMAGE
+        --platform managed
+        --region $GCP_REGION
+        --allow-unauthenticated
+        --memory 2Gi
+        --cpu 2
+        --min-instances 2
+        --max-instances 50
+        --set-env-vars ENV=gcp
+  when: manual
+  only:
+    - main

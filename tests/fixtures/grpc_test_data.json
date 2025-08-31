@@ -1,0 +1,109 @@
+{
+  "single_user_requests": [
+    {
+      "user_id": "grpc_user_001",
+      "feature_types": ["user"],
+      "include_metadata": true,
+      "expected_response": {
+        "user_id": "grpc_user_001",
+        "has_user_features": true,
+        "has_transaction_features": false,
+        "has_risk_features": false,
+        "cache_hit": false
+      }
+    },
+    {
+      "user_id": "grpc_user_002",
+      "feature_types": ["user", "transaction", "risk"],
+      "include_metadata": false,
+      "expected_response": {
+        "user_id": "grpc_user_002",
+        "has_user_features": true,
+        "has_transaction_features": true,
+        "has_risk_features": true,
+        "cache_hit": false
+      }
+    }
+  ],
+  "batch_requests": [
+    {
+      "description": "Small batch request",
+      "requests": [
+        {
+          "user_id": "batch_user_001",
+          "feature_types": ["user"],
+          "include_metadata": false
+        },
+        {
+          "user_id": "batch_user_002", 
+          "feature_types": ["user", "transaction"],
+          "include_metadata": true
+        },
+        {
+          "user_id": "batch_user_003",
+          "feature_types": ["risk"],
+          "include_metadata": false
+        }
+      ],
+      "expected_response": {
+        "total_requests": 3,
+        "min_successful_requests": 2,
+        "max_failed_requests": 1
+      }
+    },
+    {
+      "description": "Large batch request",
+      "requests_pattern": {
+        "count": 50,
+        "user_id_prefix": "large_batch_user_",
+        "feature_types": ["user", "transaction"],
+        "include_metadata": false
+      },
+      "expected_response": {
+        "total_requests": 50,
+        "min_successful_requests": 45,
+        "max_response_time_ms": 1000
+      }
+    }
+  ],
+  "performance_tests": [
+    {
+      "test_name": "latency_test",
+      "user_id": "perf_test_user_001",
+      "iterations": 100,
+      "feature_types": ["user"],
+      "expected_p95_latency_ms": 30,
+      "expected_mean_latency_ms": 15
+    },
+    {
+      "test_name": "throughput_test",
+      "concurrent_requests": 100,
+      "duration_seconds": 10,
+      "user_pool_size": 10,
+      "expected_min_rps": 500
+    }
+  ],
+  "error_scenarios": [
+    {
+      "scenario": "empty_user_id",
+      "request": {
+        "user_id": "",
+        "feature_types": ["user"]
+      },
+      "expected_error": "INVALID_ARGUMENT"
+    },
+    {
+      "scenario": "invalid_feature_type",
+      "request": {
+        "user_id": "test_user",
+        "feature_types": ["invalid_type"]
+      },
+      "expected_error": "INVALID_ARGUMENT"
+    },
+    {
+      "scenario": "batch_too_large",
+      "requests_count": 101,
+      "expected_error": "INVALID_ARGUMENT"
+    }
+  ]
+}

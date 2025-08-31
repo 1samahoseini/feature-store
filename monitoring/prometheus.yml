@@ -1,0 +1,63 @@
+# Prometheus configuration for feature store monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alerts/*.yml"
+
+scrape_configs:
+  # Feature Store API metrics
+  - job_name: 'feature-store-api'
+    static_configs:
+      - targets: ['feature-store-api:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+    scrape_timeout: 10s
+    
+  # Feature Store gRPC metrics
+  - job_name: 'feature-store-grpc'
+    static_configs:
+      - targets: ['feature-store-api:9091']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+    
+  # Redis metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    metrics_path: '/metrics'
+    
+  # PostgreSQL metrics
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres_exporter:9187']
+    metrics_path: '/metrics'
+    
+  # Airflow metrics
+  - job_name: 'airflow'
+    static_configs:
+      - targets: ['airflow-webserver:8080']
+    metrics_path: '/admin/metrics'
+    
+  # System metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+# Remote write configuration for GCP (when in production)
+# remote_write:
+#   - url: "https://monitoring.googleapis.com/v1/projects/PROJECT_ID/location/global/prometheus/api/v1/write"
+#     oauth2:
+#       client_id: "CLIENT_ID"
+#       client_secret: "CLIENT_SECRET"
+#       token_url: "https://oauth2.googleapis.com/token"
+#       scopes:
+#         - "https://www.googleapis.com/auth/monitoring.write"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093

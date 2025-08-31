@@ -1,0 +1,134 @@
+{
+  "users": [
+    {
+      "user_id": "fixture_user_001",
+      "age": 28,
+      "location_country": "AE",
+      "location_city": "Dubai",
+      "total_orders": 15,
+      "avg_order_value": 425.50,
+      "days_since_first_order": 120,
+      "preferred_payment_method": "bnpl",
+      "account_verified": true
+    },
+    {
+      "user_id": "fixture_user_002", 
+      "age": 32,
+      "location_country": "SA",
+      "location_city": "Riyadh",
+      "total_orders": 8,
+      "avg_order_value": 275.00,
+      "days_since_first_order": 45,
+      "preferred_payment_method": "credit_card",
+      "account_verified": true
+    },
+    {
+      "user_id": "fixture_user_003",
+      "age": 25,
+      "location_country": "AE",
+      "location_city": "Abu Dhabi", 
+      "total_orders": 32,
+      "avg_order_value": 180.75,
+      "days_since_first_order": 200,
+      "preferred_payment_method": "debit_card",
+      "account_verified": false
+    }
+  ],
+  "transactions": [
+    {
+      "user_id": "fixture_user_001",
+      "total_transactions_30d": 6,
+      "total_amount_30d": 1800.00,
+      "avg_transaction_amount": 300.00,
+      "max_transaction_amount": 650.00,
+      "transactions_declined_30d": 1,
+      "unique_merchants_30d": 5,
+      "weekend_transaction_ratio": 0.33,
+      "night_transaction_ratio": 0.17
+    },
+    {
+      "user_id": "fixture_user_002",
+      "total_transactions_30d": 4,
+      "total_amount_30d": 950.00,
+      "avg_transaction_amount": 237.50,
+      "max_transaction_amount": 400.00,
+      "transactions_declined_30d": 0,
+      "unique_merchants_30d": 4,
+      "weekend_transaction_ratio": 0.25,
+      "night_transaction_ratio": 0.0
+    },
+    {
+      "user_id": "fixture_user_003",
+      "total_transactions_30d": 12,
+      "total_amount_30d": 2160.00,
+      "avg_transaction_amount": 180.00,
+      "max_transaction_amount": 320.00,
+      "transactions_declined_30d": 2,
+      "unique_merchants_30d": 8,
+      "weekend_transaction_ratio": 0.42,
+      "night_transaction_ratio": 0.25
+    }
+  ],
+  "risk": [
+    {
+      "user_id": "fixture_user_001",
+      "credit_utilization_ratio": 0.45,
+      "payment_delays_30d": 1,
+      "payment_delays_90d": 2,
+      "failed_payments_count": 0,
+      "device_changes_30d": 1,
+      "login_locations_30d": 2,
+      "velocity_alerts_30d": 0,
+      "risk_score": 0.35
+    },
+    {
+      "user_id": "fixture_user_002",
+      "credit_utilization_ratio": 0.25,
+      "payment_delays_30d": 0,
+      "payment_delays_90d": 0,
+      "failed_payments_count": 0,
+      "device_changes_30d": 1,
+      "login_locations_30d": 1,
+      "velocity_alerts_30d": 0,
+      "risk_score": 0.15
+    },
+    {
+      "user_id": "fixture_user_003",
+      "credit_utilization_ratio": 0.75,
+      "payment_delays_30d": 3,
+      "payment_delays_90d": 5,
+      "failed_payments_count": 2,
+      "device_changes_30d": 4,
+      "login_locations_30d": 6,
+      "velocity_alerts_30d": 2,
+      "risk_score": 0.85
+    }
+  ],
+  "edge_cases": [
+    {
+      "user_id": "edge_case_new_user",
+      "age": 18,
+      "total_orders": 0,
+      "avg_order_value": 0.0,
+      "account_verified": false,
+      "risk_score": 0.5
+    },
+    {
+      "user_id": "edge_case_high_value_user", 
+      "age": 45,
+      "total_orders": 500,
+      "avg_order_value": 2500.0,
+      "account_verified": true,
+      "risk_score": 0.05
+    },
+    {
+      "user_id": "edge_case_risky_user",
+      "age": 22,
+      "total_orders": 3,
+      "avg_order_value": 50.0,
+      "payment_delays_30d": 10,
+      "failed_payments_count": 5,
+      "risk_score": 0.95
+    }
+  ]
+}

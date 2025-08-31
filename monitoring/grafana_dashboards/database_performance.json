@@ -1,0 +1,101 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Database Performance Comparison",
+    "tags": ["feature-store", "database", "postgresql", "cockroachdb"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Query Latency Comparison",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(feature_store_db_latency_seconds_bucket{table=\"user_features\"}[5m]))*1000",
+            "legendFormat": "User Features P95 (ms)",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(feature_store_db_latency_seconds_bucket{table=\"transaction_features\"}[5m]))*1000",
+            "legendFormat": "Transaction Features P95 (ms)",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(feature_store_db_latency_seconds_bucket{table=\"risk_features\"}[5m]))*1000",
+            "legendFormat": "Risk Features P95 (ms)",
+            "refId": "C"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Latency (ms)",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Database Operations Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(feature_store_db_operations_total{result=\"success\"}[1m])",
+            "legendFormat": "{{operation}} {{table}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 3,
+        "title": "Database Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(feature_store_db_operations_total{result=\"error\"}[1m])",
+            "legendFormat": "{{operation}} {{table}} Errors",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Connection Pool Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "feature_store_db_pool_size",
+            "legendFormat": "Active Connections",
+            "refId": "A"
+          },
+          {
+            "expr": "feature_store_db_pool_max_size",
+            "legendFormat": "Max Pool Size",
+            "refId": "B"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 5,
+        "title": "Migration Progress",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "feature_store_migration_operations_total",
+            "legendFormat": "{{operation}} {{status}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      }
+    ],
+    "time": {
+      "from": "now-2h",
+      "to": "now"
+    },
+    "refresh": "10s"
+  }
+}

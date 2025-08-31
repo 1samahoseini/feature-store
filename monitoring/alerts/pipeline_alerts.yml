@@ -1,0 +1,71 @@
+# Prometheus alerting rules for data pipelines
+
+groups:
+  - name: feature_store_pipelines
+    rules:
+      # Pipeline failure
+      - alert: FeatureStorePipelineFailure
+        expr: increase(feature_store_pipeline_runs_total{status="error"}[1h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          component: pipeline
+        annotations:
+          summary: "Feature Store pipeline failure"
+          description: "Pipeline {{ $labels.pipeline }} has failed"
+          runbook_url: "https://docs.company.com/runbooks/pipeline-failure"
+          
+      # Long running pipeline
+      - alert: FeatureStorePipelineSlow
+        expr: feature_store_pipeline_duration_seconds > 3600
+        for: 0m
+        labels:
+          severity: warning
+          component: pipeline
+        annotations:
+          summary: "Feature Store pipeline running slowly"
+          description: "Pipeline {{ $labels.pipeline }} has been running for {{ $value | humanizeDuration }}"
+          
+      # Data freshness issues
+      - alert: FeatureStoreStaleData
+        expr: feature_store_data_freshness_minutes > 120
+        for: 5m
+        labels:
+          severity: warning
+          component: data-quality
+        annotations:
+          summary: "Feature Store stale data detected"
+          description: "Data in {{ $labels.table }} is {{ $value }} minutes old (threshold: 120 minutes)"
+          
+      # Data completeness issues
+      - alert: FeatureStoreDataIncomplete
+        expr: feature_store_data_completeness_ratio < 0.95
+        for: 5m
+        labels:
+          severity: warning
+          component: data-quality
+        annotations:
+          summary: "Feature Store data completeness issue"
+          description: "Data completeness for {{ $labels.table }}.{{ $labels.column }} is {{ $value | humanizePercentage }} (threshold: 95%)"
+          
+      # Streaming pipeline issues
+      - alert: FeatureStoreStreamingLag
+        expr: feature_store_streaming_latency_seconds > 5
+        for: 2m
+        labels:
+          severity: warning
+          component: streaming
+        annotations:
+          summary: "Feature Store streaming pipeline lag"
+          description: "Streaming pipeline latency is {{ $value | humanizeDuration }} (threshold: 5s)"
+          
+      # Data anomalies
+      - alert: FeatureStoreDataAnomalies
+        expr: rate(feature_store_data_anomalies_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: data-quality
+        annotations:
+          summary: "Feature Store data anomalies detected"
+          description: "Anomalies detected in {{ $labels.table }} - {{ $labels.anomaly_type }}"

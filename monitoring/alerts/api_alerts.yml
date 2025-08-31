@@ -1,0 +1,73 @@
+groups:
+  - name: feature_store_api
+    rules:
+      - alert: FeatureStoreHighLatency
+        expr: histogram_quantile(0.95, rate(feature_store_request_duration_seconds_bucket[5m])) > 0.04
+        for: 2m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "Feature Store API high latency"
+          description: "P95 latency is {{ $value | humanizeDuration }} (threshold: 40ms)"
+          runbook_url: "https://docs.company.com/runbooks/feature-store-latency"
+
+      - alert: FeatureStoreCriticalLatency
+        expr: histogram_quantile(0.95, rate(feature_store_request_duration_seconds_bucket[5m])) > 0.1
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "Feature Store API critical latency"
+          description: "P95 latency is {{ $value | humanizeDuration }} (critical threshold: 100ms)"
+
+      - alert: FeatureStoreHighErrorRate
+        expr: rate(feature_store_requests_total{status=~"5.."}[5m]) / rate(feature_store_requests_total[5m]) > 0.01
+        for: 3m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "Feature Store API high error rate"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 1%)"
+
+      - alert: FeatureStoreCriticalErrorRate
+        expr: rate(feature_store_requests_total{status=~"5.."}[5m]) / rate(feature_store_requests_total[5m]) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "Feature Store API critical error rate"
+          description: "Error rate is {{ $value | humanizePercentage }} (critical threshold: 5%)"
+
+      - alert: FeatureStoreLowCacheHitRatio
+        expr: rate(feature_store_cache_operations_total{result="hit"}[5m]) / (rate(feature_store_cache_operations_total{result="hit"}[5m]) + rate(feature_store_cache_operations_total{result="miss"}[5m])) < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Feature Store low cache hit ratio"
+          description: "Cache hit ratio is {{ $value | humanizePercentage }} (threshold: 80%)"
+
+      - alert: FeatureStoreGRPCHighLatency
+        expr: histogram_quantile(0.95, rate(feature_store_grpc_latency_seconds_bucket[5m])) > 0.03
+        for: 2m
+        labels:
+          severity: warning
+          component: grpc
+        annotations:
+          summary: "Feature Store gRPC high latency"
+          description: "gRPC P95 latency is {{ $value | humanizeDuration }} (threshold: 30ms)"
+
+      - alert: FeatureStoreAPIDown
+        expr: up{job="feature-store-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "Feature Store API is down"
+          description: "Feature Store API has been down for more than 1 minute"

@@ -1,0 +1,97 @@
+# Cloud Run service configuration
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: feature-store
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/execution-environment: gen2
+spec:
+  template:
+    metadata:
+      annotations:
+        # Autoscaling
+        autoscaling.knative.dev/minScale: "2"
+        autoscaling.knative.dev/maxScale: "50"
+        run.googleapis.com/cpu-throttling: "false"
+        
+        # Networking
+        run.googleapis.com/vpc-access-connector: projects/PROJECT_ID/locations/us-central1/connectors/feature-store-connector
+        
+        # Security
+        run.googleapis.com/service-account: feature-store-sa@PROJECT_ID.iam.gserviceaccount.com
+        
+    spec:
+      containerConcurrency: 100
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/PROJECT_ID/feature-store:latest
+        ports:
+        - name: http1
+          containerPort: 8000
+        - name: grpc
+          containerPort: 50051
+        
+        env:
+        - name: ENV
+          value: "gcp"
+        - name: GCP_PROJECT_ID
+          value: "PROJECT_ID"
+        - name: GCP_REGION
+          value: "us-central1"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: feature-store-secrets
+              key: database-url
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: feature-store-secrets
+              key: redis-host
+        - name: REDIS_AUTH_STRING
+          valueFrom:
+            secretKeyRef:
+              name: feature-store-secrets
+              key: redis-auth
+        
+        resources:
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+        
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        # Startup probe
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+
+  traffic:
+  - percent: 100
+    latestRevision: true

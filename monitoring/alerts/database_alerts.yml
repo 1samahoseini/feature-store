@@ -1,0 +1,70 @@
+# Prometheus alerting rules for database health
+
+groups:
+  - name: feature_store_database
+    rules:
+      # Database connection issues
+      - alert: FeatureStoreDatabaseDown
+        expr: feature_store_db_health_check == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "Feature Store database is down"
+          description: "Database health check has been failing for more than 1 minute"
+          
+      # High database latency
+      - alert: FeatureStoreDatabaseHighLatency
+        expr: histogram_quantile(0.95, rate(feature_store_db_latency_seconds_bucket[5m])) > 0.1
+        for: 3m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Feature Store database high latency"
+          description: "Database P95 latency is {{ $value | humanizeDuration }} (threshold: 100ms)"
+          
+      # Database error rate
+      - alert: FeatureStoreDatabaseErrors
+        expr: rate(feature_store_db_operations_total{result="error"}[5m]) / rate(feature_store_db_operations_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Feature Store database high error rate"
+          description: "Database error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+          
+      # Connection pool exhaustion
+      - alert: FeatureStoreDatabasePoolExhaustion
+        expr: feature_store_db_pool_active_connections / feature_store_db_pool_max_size > 0.9
+        for: 2m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Feature Store database connection pool near exhaustion"
+          description: "Connection pool usage is {{ $value | humanizePercentage }} (threshold: 90%)"
+          
+      # Migration alerts
+      - alert: FeatureStoreMigrationFailure
+        expr: increase(feature_store_migration_operations_total{status="error"}[1h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          component: migration
+        annotations:
+          summary: "Feature Store database migration failure"
+          description: "Migration operation {{ $labels.operation }} has failed"
+          
+      # Cache health
+      - alert: FeatureStoreCacheDown
+        expr: feature_store_cache_health_check == 0
+        for: 30s
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Feature Store Redis cache is down"
+          description: "Redis cache health check has been failing"

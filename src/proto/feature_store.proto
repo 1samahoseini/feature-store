@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package feature_store;
+
+// Request for a single user
+message UserFeatureRequest {
+    string user_id = 1;
+    repeated string feature_types = 2;
+    bool include_metadata = 3;
+}
+
+// Feature details for a user
+message UserFeatures {
+    int32 age = 1;
+    string location_country = 2;
+    string location_city = 3;
+    int32 total_orders = 4;
+    float avg_order_value = 5;
+    int32 days_since_first_order = 6;
+    string preferred_payment_method = 7;
+    bool account_verified = 8;
+}
+
+// Response for a single user
+message UserFeatureResponse {
+    string uid = 1;
+    UserFeatures demographics = 2;
+    UserFeatures behavior = 3;
+    UserFeatures risk = 4;
+    int64 response_time = 5;
+    bool cache_hit = 6;
+    int64 freshness_ms = 7;
+    int64 timestamp = 8;
+}
+
+// Batch request
+message BatchFeatureRequest {
+    repeated UserFeatureRequest requests = 1;
+}
+
+// Batch response
+message BatchFeatureResponse {
+    int32 total_requests = 1;
+    int32 successful_requests = 2;
+    int32 failed_requests = 3;
+    int64 total_response_time_ms = 4;
+    float cache_hit_ratio = 5;
+    repeated UserFeatureResponse responses = 6;
+}
+
+// Health check
+message HealthCheckRequest {
+    string service = 1;
+}
+
+message HealthCheckResponse {
+    string status = 1;
+    int64 timestamp = 2;
+    string version = 3;
+}
+
+// Service definition
+service FeatureStore {
+  rpc GetUserFeatures(UserFeatureRequest) returns (UserFeatureResponse);
+  rpc GetBatchFeatures(BatchFeatureRequest) returns (BatchFeatureResponse);
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
